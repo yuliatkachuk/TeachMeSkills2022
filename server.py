@@ -1,8 +1,8 @@
 import socket
 import select
 
-FOR_READ = list()
-FOR_WRITE = list()
+FOR_READ = []
+FOR_WRITE = []
 
 SERVER_HOST = '127.0.0.1'
 SERVER_PORT = 7899
@@ -36,30 +36,32 @@ while True:
             # иначе client хочет послать сообщение
             # читаем сообщение от client
             data = r.recv(2048)
-            if data:
+            mes = data.decode('utf-8').split(' ')  # разделяем сообщение на части
+
+            if data and mes[1] != 'QUIT':
                 # записываем в словарь сообщение data.decode("utf-8") с указанием сокета client
                 BUFFER_MSG[r.fileno()] = data.decode('utf-8')  # ключ словаря - файловый дескриптор r.fileno()
                 print(data.decode('utf-8'))
                 if r not in FOR_WRITE:
                     FOR_WRITE.append(r)
             else:
-                print('Клиент отключился...')
+                data = mes[0] + ' ' + 'left the chat'
+                print(data)
+                BUFFER_MSG[r.fileno()] = data #записываем соообщение об удалении участника чата
+                #del BUFFER_MSG[r.fileno()]
                 if r in FOR_WRITE:
                     FOR_WRITE.remove(r)
                 FOR_READ.remove(r)
                 r.close()
-                del BUFFER_MSG[r.fileno()]
+
 
     for w in writes:
         for key, value in BUFFER_MSG.items():
-            data = value+' --- '
-            #print(value)
-           # if data:
+            data = value+'\n'
             #отправляем сообщение
             w.send(data.encode('utf-8'))
-            # удаляем из очереди на вывод\отправку сообщений
-            # но оставляем в FOR_READ, вдруг захочет что-то написать
-            #else:
+        # удаляем из очереди на вывод\отправку сообщений
+        # но оставляем в FOR_READ, вдруг захочет что-то написать
         FOR_WRITE.remove(w)
 
     for e in ERR:

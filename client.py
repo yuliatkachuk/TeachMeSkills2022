@@ -10,20 +10,20 @@ try:
     client.connect((SRV_HOST, SRV_PORT))
     name = input('Enter your name: ')
     client.send((name + ' connected to chat').encode('utf-8'))  # Уведомляем сервер о подключении
-    name1 = name + '>>> '
+    name_chat = name + '>>> '
 
     while True:
-        message = input(name1)
+        message = input(name_chat)
         if message=='QUIT':
-            message = name1.encode('utf-8') + message.encode('utf-8')
+            message = name_chat.encode('utf-8') + message.encode('utf-8')
             client.send(message)
             break
         elif message in ['r', 'refresh']:
             print(client.recv(2048).decode('utf-8'))
         else:
-            message = name1.encode('utf-8') + message.encode('utf-8')+ '    '.encode('utf-8')
+            message = name_chat.encode('utf-8') + message.encode('utf-8')+ '    '.encode('utf-8')
             client.send(message)
-            #client.recv(2048).decode('utf-8')
+            print(client.recv(2048).decode('utf-8'))
 
     print(client.recv(2048).decode('utf-8'))
     print('server>>> ', name + ',', 'bye-bye!')
